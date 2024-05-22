@@ -17,9 +17,49 @@ app.get('/booklist/', async (req,res)=>{
 })
 
 app.post('/booklist/', async (req,res)=>{
-    const data = req.body;
-    const result = await prisma.book.create({data: data});
-    res.send( {result: result});
+    try {
+        const data = req.body;
+        const result = await prisma.book.create({data: data});
+        res.send( {result: result});
+    } catch (e) {
+        res.status(500).send({error: e.message});
+    }
+
+})
+
+app.post('/booklist/input', async (req,res)=>{
+    try {
+        const result = await prisma.book.create( {
+            data:{
+                isbn:  "1004",
+                name:  "Flutter",
+                price: 800
+            } 
+        }) 
+        res.send( {result: result});
+    } catch (e) {
+        res.status(500).send({error: e.message});
+    }
+
+})
+
+app.put('/booklist/update', async (req,res)=>{
+    try {
+        const result = await prisma.book.update( {
+            data:{
+                isbn:  "1000",
+                name:  "Flutter 2",
+                price: 900
+            } ,
+            where: {
+                id: 3
+            }
+        }) 
+        res.send( {result: result});
+    } catch (e) {
+        res.status(500).send({error: e.message});
+    }
+
 })
 
 app.listen(3000);
