@@ -2,6 +2,7 @@ const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
 const { PrismaClient } = require('@prisma/client');
+const { error } = require('console');
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 
@@ -43,23 +44,147 @@ app.post('/booklist/input', async (req,res)=>{
 
 })
 
-app.put('/booklist/update', async (req,res)=>{
+app.put('/booklist/update/:id', async (req,res)=>{
     try {
         const result = await prisma.book.update( {
             data:{
                 isbn:  "1000",
                 name:  "Flutter 2",
-                price: 900
+                price: 700
             } ,
             where: {
-                id: 3
+                id: parseInt(req.params.id)
             }
         }) 
-        res.send( {result: result});
+        res.send( {result: "success"});
     } catch (e) {
         res.status(500).send({error: e.message});
     }
+})
+
+app.delete('/booklist/remove/:id', async (req,res)=>{
+    try {
+        const result = await prisma.book.delete( {
+            where: {
+                id: parseInt(req.params.id)
+            }
+        }) 
+        res.send( {result: "success"});
+    } catch (e) {
+        res.status(500).send({error: e.message});
+    }
+})
+
+app.post('/booklist/search/', async (req,res)=>{
+    try {
+        const keyword = req.body.keyword
+        const data = await prisma.book.findMany({
+            where: {
+                name: {
+                    contains: keyword
+                }
+            }
+        })
+        res.send({ result: data})
+    } catch (e) {
+        res.sendStatus(500).send({error: e.message})
+    }
+})
+
+app.post('/booklist/searchStart/', async (req,res)=>{
+    try {
+        const keyword = req.body.keyword
+        const data = await prisma.book.findMany({
+            where: {
+                name: {
+                    startsWith: keyword
+                }
+            }
+        })
+        res.send({ result: data})
+    } catch (e) {
+        res.sendStatus(500).send({error: e.message})
+    }
+})
+
+app.post('/booklist/orderBy/', async (req,res)=>{
+    try {
+        const data = await prisma.book.findMany({
+            orderBy: { price: 'desc' }
+        })
+        res.send({ result: data})
+    } catch (e) {
+        res.sendStatus(500).send({error: e.message})
+    }
+})
+
+app.post('/booklist/greater/', async (req,res)=>{
+    try {
+        const data = await prisma.book.findMany({
+            where: { price: { gt: 1300} }
+        })
+        res.send({ result: data})
+    } catch (e) {
+        res.sendStatus(500).send({error: e.message})
+    }
+})
+
+app.post('/booklist/notnull/', async (req,res)=>{
+    try {
+        const data = await prisma.book.findMany({
+            where: { detail: { not: null} }
+        })
+        res.send({ result: data})
+    } catch (e) {
+        res.sendStatus(500).send({error: e.message})
+    }
+})
+
+app.post('/booklist/sum', async (req,res)=>{
+    try {
+        const data = await prisma.book.aggregate({_sum: { price: true }})
+        res.send({ results: data})
+    } catch (e) {
+        res.status(500).send({ error: e})
+    }
 
 })
+
+app.post('/booklist/between', async (req,res) => {
+    try {
+        const data =await prisma.book.findMany( { where: { 
+            price: {
+                gte : 900,
+                lt: 1500
+            }
+        } } )
+        res.send({results: data})
+    } catch (e) {
+        res.status(500).send({ error: e})
+    }
+})
+
+app.post('/booklist/min', async (req,res) => {
+    try {
+        const data =await prisma.book.aggregate( { _min: { 
+            price:  true
+        } } )
+        res.send({results: data})
+    } catch (e) {
+        res.status(500).send({ error: e})
+    }
+})
+
+app.post('/booklist/avg', async (req,res) => {
+    try {
+        const data =await prisma.book.aggregate( { _avg: { 
+            price:  true
+        } } )
+        res.send({results: data})
+    } catch (e) {
+        res.status(500).send({ error: e})
+    }
+})
+
 
 app.listen(3000);

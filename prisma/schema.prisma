@@ -18,4 +18,6 @@ model Book {
   isbn  String
   name  String
   price Int
+  detail String?
+  registeredDate DateTime?
 }

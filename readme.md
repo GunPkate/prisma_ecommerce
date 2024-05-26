@@ -10,3 +10,7 @@ npm i pg
 npx prisma init  --datasource-provider postgresql
 
 ```
+
+```
+npx prisma studio
+```
