@@ -3,6 +3,11 @@ const app = express();
 const bodyParser = require('body-parser');
 const { PrismaClient } = require('@prisma/client');
 const { error } = require('console');
+
+const jwt = require('jsonwebtoken');
+const dotenv = require('dotenv');
+dotenv.config();
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 
@@ -145,7 +150,7 @@ app.post('/booklist/sum', async (req,res)=>{
         const data = await prisma.book.aggregate({_sum: { price: true }})
         res.send({ results: data})
     } catch (e) {
-        res.status(500).send({ error: e})
+        res.status(500).send({ error: e.message })
     }
 
 })
@@ -160,7 +165,7 @@ app.post('/booklist/between', async (req,res) => {
         } } )
         res.send({results: data})
     } catch (e) {
-        res.status(500).send({ error: e})
+        res.status(500).send({ error: e.message })
     }
 })
 
@@ -171,7 +176,7 @@ app.post('/booklist/min', async (req,res) => {
         } } )
         res.send({results: data})
     } catch (e) {
-        res.status(500).send({ error: e})
+        res.status(500).send({ error: e.message })
     }
 })
 
@@ -182,9 +187,63 @@ app.post('/booklist/avg', async (req,res) => {
         } } )
         res.send({results: data})
     } catch (e) {
-        res.status(500).send({ error: e})
+        res.status(500).send({ error: e.message })
     }
 })
 
+app.get('/booklist/findYearMonthDay',async (req,res)=>{
+    try{
+        const data = await prisma.book.findMany({
+            where: {
+                registeredDate: new Date('2024-05-10')
+            }
+        })
+        res.send({result:data})
+    } catch (e){
+        res.status(500).send({ error: e.message })
+    }
+})
 
+app.get('/booklist/findYearMonth',async (req,res)=>{
+    try{
+        const data = await prisma.book.findMany({
+            where: {
+                registeredDate: { 
+                    gte: new Date('2024-05-01'), 
+                    lte: new Date('2024-05-31') 
+                },
+            }
+        })
+        res.send({result:data})
+    } catch (e){
+        res.status(500).send({ error: e.message })
+    }
+})
+
+app.get('/user/createToekn', async (req,res) => {
+    try {
+        const secret = process.env.TOKEN_SECRET;
+        const payload = {
+            id: 100,
+            name: 'GunP',
+            level: 'admin'
+        }
+        const token = jwt.sign(payload, secret, {expiresIn: '1d'})
+        res.send({token: token})
+    } catch (e) {
+        res.status(500).send({ error: e.message })    
+    }
+})
+
+app.get('/user/verify', async (req,res) => {
+    try {
+        const secret = process.env.TOKEN_SECRET;
+        const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTAwLCJuYW1lIjoiR3VuUCIsImxldmVsIjoiYWRtaW4iLCJpYXQiOjE3MTY4MjMxOTQsImV4cCI6MTcxNjkwOTU5NH0.gfS96FRMAhnCTM5VNLYsNlXx-828WVRoB1AwZKfsny8'
+        const result = jwt.verify(token,secret);
+
+        res.send({ result: result })
+    } catch (e) {
+        res.status(500).send({ error: e.message })    
+    }
+})
 app.listen(3000);

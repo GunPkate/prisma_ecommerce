@@ -14,3 +14,7 @@ npx prisma init  --datasource-provider postgresql
 ```
 npx prisma studio
 ```
+```
+npm i jsonwebtoken
+npm i dotenv
+```
