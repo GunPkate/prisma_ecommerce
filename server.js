@@ -17,6 +17,28 @@ app.post('/',(req,res) => res.send(req.body) )
 
 const prisma = new PrismaClient();
 
+function checkSignIn(req, res, next){
+    try {
+        const secret = process.env.TOKEN_SECRET;
+        const token = req.headers['authorization']
+        const result = jwt.verify( token, secret);
+
+        if(result != undefined){
+            next();
+        }
+    } catch (e) {
+        res.status(500).send({ error: e.message })
+    }
+}
+
+app.get('/user/info', checkSignIn, (req, res, next) => {
+    try {
+        res.send('  hello  ')
+    } catch (e) {
+        res.status(500).send({ error: e.message});
+    }
+} )
+
 app.get('/booklist/', async (req,res)=>{
     const data = await prisma.book.findMany();
     res.send({data: data});
@@ -238,7 +260,7 @@ app.get('/user/createToekn', async (req,res) => {
 app.get('/user/verify', async (req,res) => {
     try {
         const secret = process.env.TOKEN_SECRET;
-        const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTAwLCJuYW1lIjoiR3VuUCIsImxldmVsIjoiYWRtaW4iLCJpYXQiOjE3MTY4MjMxOTQsImV4cCI6MTcxNjkwOTU5NH0.gfS96FRMAhnCTM5VNLYsNlXx-828WVRoB1AwZKfsny8'
+        const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTAwLCJuYW1lIjoiR3VuUCIsImxldmVsIjoiYWRtaW4iLCJpYXQiOjE3MTY5ODk1MDQsImV4cCI6MTcxNzA3NTkwNH0.5BJYZDs0gFMFrqDfR6OpXCQwDJwaSZGGSN2tpbQr4MA'
         const result = jwt.verify(token,secret);
 
         res.send({ result: result })
@@ -246,4 +268,19 @@ app.get('/user/verify', async (req,res) => {
         res.status(500).send({ error: e.message })    
     }
 })
+
+app.get('/onetoone/', async (req,res) => {
+    try {
+        const data  = await prisma.orderDetail.findMany({
+            include: {
+                book: true
+            }
+        })
+
+        res.send({ result: data })
+    } catch (e) {
+        res.status(500).send({ error: e.message })    
+    }
+})
+
 app.listen(3000);
