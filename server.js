@@ -273,7 +273,7 @@ app.get('/onetoone/', async (req,res) => {
     try {
         const data  = await prisma.orderDetail.findMany({
             include: {
-                book: true
+                Book: true
             }
         })
 
@@ -281,6 +281,38 @@ app.get('/onetoone/', async (req,res) => {
     } catch (e) {
         res.status(500).send({ error: e.message })    
     }
+})
+
+app.get('/onetomany/', async (req,res) => {
+    try {
+        const data = await prisma.book.findMany({
+            include: {
+                OrderDetail: true
+            }
+        })
+        res.send({ result: data })
+    } catch (e) {
+        res.status(500).send({ error: e.message })    
+    }
+
+})
+
+app.get('/multiModel/', async (req,res) => {
+    try {
+        const data = await prisma.customer.findMany({
+            include: {
+                Order: {
+                    include: {
+                        OrderDetail: true
+                    }
+                }
+            }
+        })
+        res.send({ result: data })
+    } catch (e) {
+        res.status(500).send({ error: e.message })    
+    }
+
 })
 
 app.listen(3000);
