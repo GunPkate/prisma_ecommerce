@@ -20,4 +20,5 @@ npm i dotenv
 npm i express-fileupload
 npm i fs
 npm i pdfkit
+npm i exceljs
 ```

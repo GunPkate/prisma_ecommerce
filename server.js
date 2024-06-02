@@ -400,4 +400,33 @@ app.get('/createPDF/', (req, res)=>{
     }
 })
 
+app.get('/readExcel', async (req,res)=>{
+    try {
+        const excel = require('exceljs');
+        const wb = new excel.Workbook();
+        await wb.xlsx.readFile('productExport.xlsx');
+        const ws = wb.getWorksheet(1);
+
+        let a = []
+        for (let i = 1; i < ws.rowCount; i++) {
+            const row = ws.getRow(i);
+            const barcode = row.getCell(1).value;
+            const name = row.getCell(2).value;
+            const cost = row.getCell(3).value;
+            const sale = row.getCell(4).value;
+            const send = row.getCell(5).value;
+            const unit = row.getCell(6).value;
+            const point = row.getCell(7).value;
+            const productTypeId = row.getCell(8).value;
+
+            console.log(barcode,name,cost,sale,send,unit,point,productTypeId)
+            a.push(name)
+        }
+
+        res.send({message: "success",data: a})
+    } catch (e) {
+        res.status(500).send({ error:e })
+    }
+})
+
 app.listen(3000);
