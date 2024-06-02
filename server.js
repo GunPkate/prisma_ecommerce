@@ -7,9 +7,11 @@ const { error } = require('console');
 const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
 dotenv.config();
+const fileUpoload = require('express-fileupload')
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
+app.use(fileUpoload())
 
 app.get('/',(req,res) => res.send('hello') )
 // app.post('/:name',(req,res) => res.send('hello '+req.params.name) )
@@ -313,6 +315,89 @@ app.get('/multiModel/', async (req,res) => {
         res.status(500).send({ error: e.message })    
     }
 
+})
+
+app.post('/book/fileUpload/', (req,res) => {
+    try {
+        console.log(123)
+        const myFile = req.files.myFile;
+        console.log(myFile)
+        myFile.mv('./uploads/' + myFile.name, (err) => {
+            if(err){
+                res.status(500).send({ error: err })
+            }
+            res.send({ message:"success" })
+        })
+    } catch (e) {
+        res.status(500).send({ error: e.message })    
+    }
+})
+
+app.get('/book/readFile/', ( req, res) => {
+    try {
+        const fs = require('fs');
+        fs.readFile("./uploads/test.txt", (err,data)=>{
+            if(err){
+                throw err
+            }
+
+            res.send(data)
+        })
+    } catch (e) {
+        res.status(500).send({ error: e.message })          
+    }
+})
+
+app.get('/book/writeFile/', ( req, res) => {
+    try {
+        const fs = require('fs');
+        fs.writeFile("./uploads/test.txt", 'hello GP', (err,data)=>{
+            if(err){
+                throw err
+            }
+
+            res.send({ message: "success"})
+        })
+    } catch (e) {
+        res.status(500).send({ error: e.message })          
+    }
+})
+
+app.get('/book/removeFile/', ( req, res) => {
+    try {
+        const fs = require('fs');
+        fs.unlinkSync("test.txt" )
+        res.send({ message: "success"})
+    } catch (e) {
+        res.status(500).send({ error: e.message })          
+    }
+})
+
+app.get('/book/fileExist/', ( req, res) => {
+    try {
+        const fs = require('fs');
+        const found = fs.existsSync('package.json')
+        res.send({ found: found})
+    } catch (e) {
+        res.status(500).send({ error: e.message })          
+    }
+})
+
+app.get('/createPDF/', (req, res)=>{
+    try {
+        const PDF = require('pdfkit');
+        const fs = require('fs');
+        const doc = new PDF();
+
+        doc.pipe(fs.createWriteStream('output.pdf'))
+        doc.font('kanit/Kanit-Medium.ttf').fontSize(25).text('สวัสดี ทดสอบ Some text embeded font!',100,100);
+        doc.addPage().fontSize(25).text('Here is some vector graphics...',100,100)
+        doc.end();
+
+        res.send({ message: "success"})
+    } catch (e) {
+        res.status(500).send({error: e.message})
+    }
 })
 
 app.listen(3000);

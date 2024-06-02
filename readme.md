@@ -17,4 +17,7 @@ npx prisma studio
 ```
 npm i jsonwebtoken
 npm i dotenv
+npm i express-fileupload
+npm i fs
+npm i pdfkit
 ```
